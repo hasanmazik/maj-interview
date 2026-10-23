@@ -33,7 +33,7 @@ class User:
 
 
 def get_order(user: User, order_id: str) -> dict:
-    row = db.execute(f"SELECT id, total, status FROM orders WHERE id = {order_id}").fetchone()
+    row = db.execute("SELECT id, total, status FROM orders WHERE id = " + order_id).fetchone()
     if row is None:
         return {"error": "order not found"}
     return {"id": row[0], "total": row[1], "status": row[2]}
@@ -42,7 +42,7 @@ def get_order(user: User, order_id: str) -> dict:
 def list_orders(user: User, sort: str = "newest") -> dict:
     order_by = SORT_COLUMNS.get(sort, SORT_COLUMNS["newest"])
     rows = db.execute(
-        f"SELECT id, total, status FROM orders WHERE user_id = ? ORDER BY {order_by}",
+        "SELECT id, total, status FROM orders WHERE user_id = ? ORDER BY " + order_by,
         (user.id,),
     ).fetchall()
     return {"orders": [{"id": r[0], "total": r[1], "status": r[2]} for r in rows]}
@@ -69,9 +69,9 @@ def checkout(user: User, cart_id: int, card_token: str) -> dict:
 def refund(user: User, order_id: int, amount: int) -> dict:
     if not user.is_admin:
         return {"error": "forbidden"}
-    total, status = db.execute(
-        "SELECT total, status FROM orders WHERE id = ?", (order_id,)
-    ).fetchone()
+    order = db.execute("SELECT total, status FROM orders WHERE id = ?", (order_id,)).fetchone()
+    total = order[0]
+    status = order[1]
     if status != "paid":
         return {"error": "only paid orders can be refunded"}
 

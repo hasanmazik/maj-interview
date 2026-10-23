@@ -39,9 +39,10 @@ API. Read it, but do not change it or the tests.
 
 ## Question 2: Code review
 
-`review/orders_service.py` is a pull request from a teammate. It is not meant
-to be run.
+`review/orders_service.py` is a pull request from a teammate. The problems in
+it are not specific to Python; they would be problems in any language. The file
+is not meant to be run.
 
-- **2a.** Review it. Add a comment starting with `# REVIEW:` above each problem,
-  saying what is wrong and why it matters.
+- **2a.** Find the problems and fix them in the file. Add a comment starting
+  with `# FIX:` next to each change, saying what was wrong and why it matters.
 - **2b.** Tell us the three problems you would block the merge for, and why.
