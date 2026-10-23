@@ -2,7 +2,7 @@
 
 
 def fetch_all_orders(api):
-    """Return every pending order, across all pages."""
+    """Return every pending order, from every page."""
     orders = []
     page = 1
     while True:
@@ -20,7 +20,11 @@ def reserve(api, order):
 
 
 def sync_orders(api):
-    """Reserve stock for every pending order. Returns a count per outcome."""
+    """Reserve stock for every pending order.
+
+    Returns how many orders ended in each outcome, for example:
+        {"reserved": 8, "out_of_stock": 2, "failed": 0}
+    """
     summary = {"reserved": 0, "out_of_stock": 0, "failed": 0}
     for order in fetch_all_orders(api):
         status = reserve(api, order)

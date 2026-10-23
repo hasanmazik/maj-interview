@@ -1,7 +1,7 @@
 """Order and payment handlers for the shop's customer API.
 
 Each handler receives the signed-in user and the request parameters, and
-returns a JSON-serialisable dict. The web framework authenticates the user
+returns a dict that is sent back as JSON. The web framework signs the user in
 before any handler is called. Amounts are in cents.
 """
 
@@ -33,6 +33,7 @@ class User:
 
 
 def get_order(user: User, order_id: str) -> dict:
+    """Return one of the signed-in user's orders."""
     row = db.execute("SELECT id, total, status FROM orders WHERE id = " + order_id).fetchone()
     if row is None:
         return {"error": "order not found"}
@@ -40,6 +41,7 @@ def get_order(user: User, order_id: str) -> dict:
 
 
 def list_orders(user: User, sort: str = "newest") -> dict:
+    """Return all of the signed-in user's orders, sorted by `sort`."""
     order_by = SORT_COLUMNS.get(sort, SORT_COLUMNS["newest"])
     rows = db.execute(
         "SELECT id, total, status FROM orders WHERE user_id = ? ORDER BY " + order_by,
@@ -49,6 +51,7 @@ def list_orders(user: User, sort: str = "newest") -> dict:
 
 
 def checkout(user: User, cart_id: int, card_token: str) -> dict:
+    """Charge the cart total to the user's card, then save the order as paid."""
     total = db.execute(
         "SELECT total FROM carts WHERE id = ? AND user_id = ?", (cart_id, user.id)
     ).fetchone()[0]
@@ -67,6 +70,7 @@ def checkout(user: User, cart_id: int, card_token: str) -> dict:
 
 
 def refund(user: User, order_id: int, amount: int) -> dict:
+    """Refund part or all of a paid order. Only admins can do this."""
     if not user.is_admin:
         return {"error": "forbidden"}
     order = db.execute("SELECT total, status FROM orders WHERE id = ?", (order_id,)).fetchone()
@@ -82,6 +86,7 @@ def refund(user: User, order_id: int, amount: int) -> dict:
 
 
 def download_invoice(user: User, filename: str) -> bytes:
+    """Return the PDF of one of the signed-in user's invoices."""
     path = os.path.join(INVOICE_DIR, filename)
     with open(path, "rb") as f:
         return f.read()
